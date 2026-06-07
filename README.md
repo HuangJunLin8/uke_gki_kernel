@@ -62,22 +62,22 @@
 
 ![docker2](assets/docker2.png)
 
-
 ## 6. chroot 和 DroidSpaces 对比
 
-使用 `DroidSpaces` 创建的 `Linux` 优势是进程隔离，**有 `systemd`**
+此前我基于 `base` 镜像自建的 `ubuntu24` 系统，在容器内使用 `zink` 加速，桌面动画卡顿明显，无法日常使用
 
-但`GPU` 并非直通，是以镜像到隔离 `/dev` 的方式，会有损耗，**显示桌面会有卡顿**
+克隆自项目 **[Droidspaces-rootfs-KDE-builder](https://github.com/Goldzxcbug/Droidspaces-rootfs-KDE-builder)**，利用 `Github Action` 创建带有 `GPU` 加速和 `KDE`的 `rootfs`
 
-而使用 `chroot` 方式的 `Linux` 是 `GPU` 直通的，**桌面的显示会流畅很多**
+该项目方案能使用 `KGSL` 加速，动画流畅，可满足日常需求
 
 另外给你看看 GPU 跑分对比：（详细信息可见：[Linux GPU 测试](#Linux-GPU-测试) ）
 
-| 环境                     | GPU 驱动 | glmark2 Score | 解析                            |
-| ------------------------ | -------- | ------------- | ------------------------------- |
-| Ubuntu 24 in DroidSpaces | Zink     | 146           | 容器 + Zink 性能低，3D 加速有限 |
-| Ubuntu 24 in Chroot      | Zink     | 264           | 原生环境提升，Zink 性能改善明显 |
-| Ubuntu 24 in Chroot      | KGSL     | 805           | 原生环境 + 原生驱动，性能最佳   |
+| 环境                      | GPU 驱动 | glmark2 Score | 解析                                |
+| ------------------------- | -------- | ------------- | ----------------------------------- |
+| DroidSpaces (自建)        | Zink     | 146           | 容器 + Zink 性能低，3D 加速有限     |
+| DroidSpaces (KDE-builder) | KGSL     | 611           | 容器+ 原生驱动，性能不错            |
+| Chroot (自建)             | Zink     | 264           | 原生环境 + Zink 性能低，3D 加速有限 |
+| Chroot (自建)             | KGSL     | 805           | 原生环境 + 原生驱动，性能最佳       |
 ---
 
 
@@ -273,12 +273,12 @@ SUSFS    --> 2026-06-02
 
 ## 测试详情
 
-`DroidSpaces` 的 `ubuntu` 里启用不了 `ksgl` 的方式，故没测这个方案
-
 ### a. `DroidSpaces`+ `zink`
 
 ```
+=======================================================
 glmark2 2023.01
+=======================================================
 OpenGL Information
 GL_VENDOR:      Mesa
 GL_RENDERER:    zink Vulkan 1.4(Turnip Adreno (TM) 735 (MESA_TURNIP))
@@ -326,7 +326,61 @@ Surface Size:   800x600 windowed
 =======================================================
 ```
 
-### b. `Chroot` + `zink`
+### b. `DroidSpaces`+ `ksgl`
+
+```
+MESA-LOADER: failed to retrieve device information
+MESA: error: kgsl_pipe_get_param:103: invalid param id: 13
+=======================================================
+    glmark2 2023.01
+=======================================================
+    OpenGL Information
+    GL_VENDOR:      freedreno
+    GL_RENDERER:    FD735
+    GL_VERSION:     4.6 (Compatibility Profile) Mesa 26.2.0-devel (git-3743cc80a8)
+    Surface Config: buf=32 r=8 g=8 b=8 a=8 depth=24 stencil=0 samples=0
+    Surface Size:   800x600 windowed
+=======================================================
+[build] use-vbo=false: FPS: 771 FrameTime: 1.298 ms
+[build] use-vbo=true: FPS: 705 FrameTime: 1.420 ms
+[texture] texture-filter=nearest: FPS: 718 FrameTime: 1.393 ms
+[texture] texture-filter=linear: FPS: 774 FrameTime: 1.292 ms
+[texture] texture-filter=mipmap: FPS: 675 FrameTime: 1.483 ms
+[shading] shading=gouraud: FPS: 668 FrameTime: 1.499 ms
+[shading] shading=blinn-phong-inf: FPS: 778 FrameTime: 1.287 ms
+[shading] shading=phong: FPS: 693 FrameTime: 1.444 ms
+[shading] shading=cel: FPS: 656 FrameTime: 1.524 ms
+[bump] bump-render=high-poly: FPS: 651 FrameTime: 1.538 ms
+[bump] bump-render=normals: FPS: 710 FrameTime: 1.410 ms
+[bump] bump-render=height: FPS: 818 FrameTime: 1.223 ms
+[effect2d] kernel=0,1,0;1,-4,1;0,1,0;: FPS: 643 FrameTime: 1.556 ms
+[effect2d] kernel=1,1,1,1,1;1,1,1,1,1;1,1,1,1,1;: FPS: 548 FrameTime: 1.826 ms
+[pulsar] light=false:quads=5:texture=false: FPS: 781 FrameTime: 1.282 ms
+[desktop] blur-radius=5:effect=blur:passes=1:separable=true:windows=4: FPS: 532 FrameTime: 1.880 ms
+[desktop] effect=shadow:windows=4: FPS: 794 FrameTime: 1.260 ms
+[buffer] columns=200:interleave=false:update-dispersion=0.9:update-fraction=0.5:update-method=map: FPS: 211 FrameTime: 4.756 ms
+[buffer] columns=200:interleave=false:update-dispersion=0.9:update-fraction=0.5:update-method=subdata: FPS: 271 FrameTime: 3.691 ms
+[buffer] columns=200:interleave=true:update-dispersion=0.9:update-fraction=0.5:update-method=map: FPS: 274 FrameTime: 3.653 ms
+[ideas] speed=duration: FPS: 412 FrameTime: 2.430 ms
+[jellyfish] <default>: FPS: 599 FrameTime: 1.671 ms
+[terrain] <default>: FPS: 235 FrameTime: 4.267 ms
+[shadow] <default>: FPS: 552 FrameTime: 1.814 ms
+[refract] <default>: FPS: 442 FrameTime: 2.265 ms
+[conditionals] fragment-steps=0:vertex-steps=0: FPS: 674 FrameTime: 1.484 ms
+[conditionals] fragment-steps=5:vertex-steps=0: FPS: 660 FrameTime: 1.515 ms
+[conditionals] fragment-steps=0:vertex-steps=5: FPS: 672 FrameTime: 1.490 ms
+[function] fragment-complexity=low:fragment-steps=5: FPS: 660 FrameTime: 1.516 ms
+[function] fragment-complexity=medium:fragment-steps=5: FPS: 713 FrameTime: 1.403 ms
+[loop] fragment-loop=false:fragment-steps=5:vertex-steps=5: FPS: 632 FrameTime: 1.584 ms
+[loop] fragment-steps=5:fragment-uniform=false:vertex-steps=5: FPS: 667 FrameTime: 1.500 ms
+[loop] fragment-steps=5:fragment-uniform=true:vertex-steps=5: FPS: 630 FrameTime: 1.589 ms
+=======================================================
+                                  glmark2 Score: 611 
+=======================================================
+
+```
+
+### c. `Chroot` + `zink`
 
 ```
 =======================================================
@@ -377,7 +431,7 @@ Surface Size:   800x600 windowed
 =======================================================
 ```
 
-### c. `Chroot` + `ksgl`
+### d. `Chroot` + `ksgl`
 
 ```
 (base) ➜  ~ glmark2 
