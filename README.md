@@ -20,14 +20,49 @@
 
 我编译好的内核（亲测可用）：[Release](https://github.com/HuangJunLin8/uke_GKI_KernelSU_SUSFS/releases/tag/release)
 
+---
+
+## 目录
+
+- **结果展示**
+  - [1. SukiSU 主页](#results-sukisu)
+  - [2. xfce 桌面](#results-xfce)
+  - [3. VScode](#results-vscode)
+  - [4. code-server](#results-code-server)
+  - [5. docker](#results-docker)
+  - [6. chroot 和 DroidSpaces 对比](#results-chroot)
+- **操作记录**
+  - [1. 参数获取](#guide-params)
+  - [2. 配置 Github Action](#guide-action)
+  - [3. 下载编译成果](#guide-download)
+  - [4. 镜像重打包](#guide-repack)
+    - [a. 工程目录](#guide-repack-structure)
+    - [b. 获取 magiskboot](#guide-repack-magiskboot)
+    - [c. 解包原厂 boot](#guide-repack-unpack-stock)
+    - [d. 解包编译输出](#guide-repack-unpack-output)
+    - [e. 打包为新 boot.img](#guide-repack-build)
+  - [5. 镜像烧录](#guide-flash)
+- **参数测试**
+  - [KernelSU 变体测试结果](#params)
+- **Linux GPU 测试**
+  - [测试环境](#gpu-env)
+  - [测试详情](#gpu-detail)
+    - [a. DroidSpaces + Zink](#gpu-droidspaces-zink)
+    - [b. DroidSpaces + KGSL](#gpu-droidspaces-kgsl)
+    - [c. Chroot + Zink](#gpu-chroot-zink)
+    - [d. Chroot + KGSL](#gpu-chroot-kgsl)
 
 ---
 
 # 结果展示
 
+<a id="results-sukisu"></a>
+
 ## 1. SukiSU 主页
 
 ![Screenshot_2026-06-04-14-21-12-282_com.sukisu.ultra](assets/Screenshot_2026-06-04-14-21-12-282_com.sukisu.ultra.jpg)
+
+<a id="results-xfce"></a>
 
 ## 2. xfce 桌面
 
@@ -37,17 +72,23 @@
 
 ![Screenshot_2026-06-04-13-38-44-653_com.termux.x11](assets/Screenshot_2026-06-04-13-38-44-653_com.termux.x11.jpg)
 
+<a id="results-vscode"></a>
+
 ## 3. VScode 
 
 在 Termux-x11中显示：VScode  
 
 ![Screenshot_2026-06-04-14-08-07-025_com.termux.x11](assets/Screenshot_2026-06-04-14-08-07-025_com.termux.x11.jpg)
 
+<a id="results-code-server"></a>
+
 ## 4. code-server
 
 在浏览器全屏打开：`code-server` （鼠标指针太大了）
 
 ![Screenshot_2026-06-04-15-27-19-458_com.microsoft.emmx](assets/Screenshot_2026-06-04-15-27-19-458_com.microsoft.emmx.jpg)
+
+<a id="results-docker"></a>
 
 ## 5. docker
 
@@ -61,6 +102,8 @@
 
 
 ![docker2](assets/docker2.png)
+
+<a id="results-chroot"></a>
 
 ## 6. chroot 和 DroidSpaces 对比
 
@@ -91,6 +134,8 @@
 
 ---
 
+<a id="guide-params"></a>
+
 ## 1. 参数获取
 
 设置里查到内核版本：`6.1.118`，在 [版本查询页面](https://zzh20188.github.io/GKI_KernelSU_SUSFS/) 进一步获取完整信息
@@ -100,6 +145,8 @@
 > 手机安卓版本 `Android 15` 不是我们需要的，得是内核版本号里的 `android14` 
 
 ---
+
+<a id="guide-action"></a>
 
 ## 2. 配置 Github Action
 
@@ -131,6 +178,8 @@ NTSync        : true
 
 ---
 
+<a id="guide-download"></a>
+
 ## 3. 下载编译成果
 
 都是压缩包的形式，需要先解压
@@ -139,11 +188,15 @@ NTSync        : true
 
 ---
 
+<a id="guide-repack"></a>
+
 ## 4. 镜像重打包
 
 输出的内核镜像 ` android14-6.1.118-2025-01-boot.img ` 需要重新打包
 
 把原厂的 `ramdisk.cpio` 加进来
+
+<a id="guide-repack-structure"></a>
 
 ### a. 工程目录
 
@@ -165,6 +218,8 @@ NTSync        : true
 
 ---
 
+<a id="guide-repack-magiskboot"></a>
+
 ### b. 获取 magiskboot 
 
 `magiskboot` 是镜像处理工具，可解压、重打包 `.img` 文件
@@ -177,6 +232,8 @@ NTSync        : true
 
 ---
 
+<a id="guide-repack-unpack-stock"></a>
+
 ### c. 解包原厂boot
 
 ```
@@ -187,6 +244,8 @@ NTSync        : true
 
 ---
 
+<a id="guide-repack-unpack-output"></a>
+
 ### d. 解包编译输出
 
 ```
@@ -196,6 +255,8 @@ NTSync        : true
 能得到 `kernel`，**将其移动到 `boot/repack` 里面**
 
 ---
+
+<a id="guide-repack-build"></a>
 
 ### e. 打包为新 boot.img
 
@@ -210,6 +271,8 @@ NTSync        : true
 
 
 
+<a id="guide-flash"></a>
+
 ## 5. 镜像烧录
 
 重启到 `fastboot` 后， 在目录 `boot/repack` 下执行：
@@ -223,6 +286,8 @@ fastboot reboot
 ```
 
 ---
+
+<a id="params"></a>
 
 # 参数测试
 
@@ -261,6 +326,8 @@ SUSFS    --> 2026-06-02
 
 # Linux GPU 测试
 
+<a id="gpu-env"></a>
+
 ## 测试环境
 
 1. 统一在应用 `termux-x11` 上显示
@@ -271,7 +338,11 @@ SUSFS    --> 2026-06-02
 
 
 
+<a id="gpu-detail"></a>
+
 ## 测试详情
+
+<a id="gpu-droidspaces-zink"></a>
 
 ### a. `DroidSpaces`+ `zink`
 
@@ -325,6 +396,8 @@ Surface Size:   800x600 windowed
                                   glmark2 Score: 146 
 =======================================================
 ```
+
+<a id="gpu-droidspaces-kgsl"></a>
 
 ### b. `DroidSpaces`+ `ksgl`
 
@@ -380,6 +453,8 @@ MESA: error: kgsl_pipe_get_param:103: invalid param id: 13
 
 ```
 
+<a id="gpu-chroot-zink"></a>
+
 ### c. `Chroot` + `zink`
 
 ```
@@ -430,6 +505,8 @@ MESA: error: kgsl_pipe_get_param:103: invalid param id: 13
                                   glmark2 Score: 264 
 =======================================================
 ```
+
+<a id="gpu-chroot-kgsl"></a>
 
 ### d. `Chroot` + `ksgl`
 
